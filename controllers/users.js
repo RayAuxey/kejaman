@@ -1,6 +1,7 @@
 const UserModel = require("../models/user");
 
 const { users } = require("../db.json");
+
 const crypto = require("crypto");
 
 module.exports = {
@@ -34,7 +35,8 @@ module.exports = {
     res.status(200).json({
       success: true,
       message: `Suceessfully logged in as ${email}`,
-      token: Math.floor(Math.random() * (99999 - 10000) + 10000),
+      // token: Math.floor(Math.random() * (99999 - 10000) + 10000),
+      token: crypto.randomBytes(10).toString("hex"),
     });
   },
   userSignup: (req, res) => {
@@ -49,7 +51,7 @@ module.exports = {
     const user = users.find((user) => user.email === email);
 
     if (user) {
-      return res.status(200).json({
+      return res.status(400).json({
         success: false,
         message: "There's a user with that email",
       });
