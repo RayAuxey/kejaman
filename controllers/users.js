@@ -1,7 +1,7 @@
 const User = require("../models/user");
 
-const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 module.exports = {
   userLogin: async (req, res) => {
@@ -30,11 +30,21 @@ module.exports = {
     }
 
     console.log("Logging in..");
+
+    const token = jwt.sign(
+      {
+        email,
+        first_name: user.firstName,
+        last_name: user.lastName,
+        id: user._id,
+      },
+      process.env.JWT_SECRET
+    );
     res.status(200).json({
       success: true,
       message: `Suceessfully logged in as ${email}`,
       // token: Math.floor(Math.random() * (99999 - 10000) + 10000),
-      token: crypto.randomBytes(10).toString("hex"),
+      token,
     });
   },
   userSignup: async (req, res) => {
@@ -79,12 +89,47 @@ module.exports = {
       });
     }
   },
-  listUsers: (req, res) => {
-    res.json(
-      users.map((user) => ({
-        email: user.email,
-        name: user.name,
-      }))
-    );
+  listUsers: async (req, res) => {
+    try {
+      const users = await User.find({}).select("-password").exec();
+      res.json({
+        success: true,
+        results: users,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: "Server error",
+      });
+    }
+  },
+  editUser: async (req, res) => {
+    const { id } = req.user;
+    const { first_name, last_name, password, email } = req.body;
+
+    let editedUser = {};
+
+    if (first_name) {
+      editedUser.firstName = first_name;
+    }
+    if (last_name) {
+      editedUser.lastName = last_name;
+    }
+
+    if (email) {
+      editedUser.email = email;
+    }
+
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      editedUser.password = await bcrypt.hash(password, salt);
+    }
+
+    try {
+      await User.updateOne({ _id: id }, editedUser).exec();
+      res.send("Updated the user");
+    } catch (error) {
+      res.status(500).send("Server Error");
+    }
   },
 };
