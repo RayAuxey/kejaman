@@ -1,36 +1,22 @@
-const fs = require("fs");
-const path = require("path");
-const db = require("../db.json");
+const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
 
-class User {
-  constructor(email, name, password) {
-    this.email = email;
-    this.name = name;
-    this.password = password;
-  }
+const userSchema = new mongoose.Schema({
+  firstName: {
+    type: String,
+    required: true,
+  },
+  lastName: {
+    type: String,
+    required: true,
+  },
+  password: String,
+});
 
-  saveToDb() {
-    const dbUsers = db.users;
-    const newDbUsers = [
-      ...dbUsers,
-      {
-        email: this.email,
-        name: this.name,
-        password: this.password,
-      },
-    ];
-    const newDb = { ...db, users: newDbUsers };
+userSchema.pre("save", async function () {
+  const salt = await bcrypt.genSalt(10);
+  const hash = await bcrypt.hash(this.password, salt);
+  this.password = hash;
+});
 
-    fs.writeFileSync(path.join(__dirname, "../db.json"), JSON.stringify(newDb));
-  }
-
-  toJson() {
-    return JSON.stringify({
-      email: this.email,
-      name: this.name,
-      password: this.password,
-    });
-  }
-}
-
-module.exports = User;
+module.exports = mongoose.model("User", userSchema);

@@ -1,11 +1,10 @@
-const UserModel = require("../models/user");
-
-const { users } = require("../db.json");
+const User = require("../models/user");
 
 const crypto = require("crypto");
+const bcrypt = require("bcryptjs");
 
 module.exports = {
-  userLogin: (req, res) => {
+  userLogin: async (req, res) => {
     const { email, password } = req.body;
 
     if (!(email && password)) {
@@ -15,8 +14,7 @@ module.exports = {
       });
     }
 
-    const user = users.find((user) => user.email === email);
-
+    const user = await User.findOne({ email }).exec();
     if (!user) {
       return res.status(404).json({
         success: "false",
@@ -24,7 +22,7 @@ module.exports = {
       });
     }
 
-    if (user && password !== user.password) {
+    if (!(await bcrypt.compare(password, user.password))) {
       return res.status(403).json({
         success: false,
         message: "Invalid Password",
@@ -39,16 +37,18 @@ module.exports = {
       token: crypto.randomBytes(10).toString("hex"),
     });
   },
-  userSignup: (req, res) => {
-    const { email, name, password } = req.body;
-
-    if (!(email && name && password)) {
+  userSignup: async (req, res) => {
+    const { email, first_name, last_name, password } = req.body;
+    if (!(email && first_name && last_name && password)) {
       return res.status(400).json({
         success: false,
         message: "You should provide email, name and password",
       });
     }
-    const user = users.find((user) => user.email === email);
+
+    const user = await User.findOne({
+      email,
+    }).exec();
 
     if (user) {
       return res.status(400).json({
@@ -57,13 +57,19 @@ module.exports = {
       });
     }
 
-    const newUser = new UserModel(email, name, password);
+    const newUser = new User({
+      firstName: first_name,
+      lastName: last_name,
+      password,
+      email,
+    });
 
     try {
-      newUser.saveToDb();
+      const savedDoc = await newUser.save();
       return res.status(201).json({
         success: true,
         message: "User created successfully",
+        doc: savedDoc,
       });
     } catch (error) {
       console.log(error);
