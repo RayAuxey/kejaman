@@ -61,4 +61,28 @@ module.exports = {
       });
     }
   },
+  deleteBuilding: async (req, res) => {
+    const userId = req.user.id;
+    const buildingId = req.params.id;
+
+    // Find the building
+    try {
+      const building = await Building.findById(buildingId).exec();
+      if (userId != building.owner) {
+        return res.status(401).json({
+          success: false,
+          message: "You are not authorized to delete the building",
+        });
+      }
+      await Building.deleteOne({ _id: buildingId });
+      res.json({
+        success: true,
+        message: "You have successfully deleted the building",
+      });
+    } catch (error) {
+      res.status(500).json({
+        error,
+      });
+    }
+  },
 };
