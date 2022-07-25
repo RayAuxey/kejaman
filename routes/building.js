@@ -6,6 +6,7 @@ const {
   showOwnerBuildings,
   showBuilding,
   deleteBuilding,
+  updateBuilding,
 } = require("../controllers/building");
 
 // Add a new buiding
@@ -22,5 +23,8 @@ router.get("/:id", showBuilding);
 
 // Delete building
 router.delete("/:id", authenticate, deleteBuilding);
+
+// Update Building
+router.put("/:id", authenticate, updateBuilding);
 
 module.exports = router;

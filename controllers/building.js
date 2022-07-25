@@ -68,6 +68,14 @@ module.exports = {
     // Find the building
     try {
       const building = await Building.findById(buildingId).exec();
+
+      if (!building) {
+        res.status(404).json({
+          success: false,
+          message: "No such building",
+        });
+      }
+
       if (userId != building.owner) {
         return res.status(401).json({
           success: false,
@@ -78,6 +86,37 @@ module.exports = {
       res.json({
         success: true,
         message: "You have successfully deleted the building",
+      });
+    } catch (error) {
+      res.status(500).json({
+        error,
+      });
+    }
+  },
+  updateBuilding: async (req, res) => {
+    const buildingId = req.params.id;
+    const userId = req.user.id;
+
+    try {
+      const building = await Building.findById(buildingId).exec();
+
+      if (!building) {
+        res.status(404).json({
+          success: false,
+          message: "No such building",
+        });
+      }
+
+      if (userId != building.owner) {
+        return res.status(401).json({
+          success: false,
+          message: "You are not authorized to update the building",
+        });
+      }
+      await Building.updateOne({ _id: buildingId }, req.body);
+      res.json({
+        success: true,
+        message: "You have successfully updated the building",
       });
     } catch (error) {
       res.status(500).json({
