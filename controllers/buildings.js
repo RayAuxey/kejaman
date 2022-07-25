@@ -53,7 +53,9 @@ module.exports = {
     const { id } = req.params;
 
     try {
-      const building = await Building.findById(id).exec();
+      const building = await Building.findById(id)
+        .populate("owner", "-password")
+        .exec();
       res.json(building);
     } catch (error) {
       res.status(500).json({

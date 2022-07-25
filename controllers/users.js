@@ -43,7 +43,6 @@ module.exports = {
     res.status(200).json({
       success: true,
       message: `Suceessfully logged in as ${email}`,
-      // token: Math.floor(Math.random() * (99999 - 10000) + 10000),
       token,
     });
   },
@@ -107,7 +106,7 @@ module.exports = {
     const { id } = req.user;
     const { first_name, last_name, password, email } = req.body;
 
-    let editedUser = {};
+    const editedUser = {};
 
     if (first_name) {
       editedUser.firstName = first_name;

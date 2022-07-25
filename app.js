@@ -13,11 +13,15 @@ mongoose.connect(
 
 const port = process.env.PORT || process.env.APP_PORT;
 
-const userRoutes = require("./routes/users.js");
-const buildingRoutes = require("./routes/building");
+app.use("/uploads", express.static("uploads"));
+
+const userRoutes = require("./routes/users");
+const buildingRoutes = require("./routes/buildings");
+const unitRoutes = require("./routes/units");
 
 app.use("/api/users", userRoutes);
-app.use("/api/building", buildingRoutes);
+app.use("/api/buildings", buildingRoutes);
+app.use("/api/units", unitRoutes);
 
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
