@@ -50,4 +50,19 @@ module.exports = {
       });
     }
   },
+  listBuildingUnits: async (req, res) => {
+    const buildingId = req.params.id;
+    try {
+      const units = await Unit.find({
+        building: buildingId,
+      }).exec();
+      return res.json({
+        results: units,
+      });
+    } catch (error) {
+      res.status(500).json({
+        error,
+      });
+    }
+  },
 };
