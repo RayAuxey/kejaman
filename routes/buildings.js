@@ -7,7 +7,7 @@ const {
   showBuilding,
   deleteBuilding,
   updateBuilding,
-} = require("../controllers/building");
+} = require("../controllers/buildings");
 
 // Add a new buiding
 router.post("/", authenticate, addBuilding);
